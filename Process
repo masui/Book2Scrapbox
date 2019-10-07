@@ -1,0 +1,17 @@
+手順
+
+* 書籍を裁断
+* ScanSnapでスキャン
+* PDFをJPEGに分解してフォルダに置く
+  % pdfimages -j mybook.pdf 'title'
+* pbmになってる場合はjpgに変換
+  % ruby pbm2jpg.rb *.pbm
+  % /bin/rm *.pbm
+*  (可能なら) 余白を除去
+* 全JPEGをS3とGyazoにアップロードしつつScrapbox用のJSONを生成
+  % ruby makejson.rb *.jpg > book.json
+* Scrapboxプロジェクトを作ってJSONをインポート
+* (後で) OCRデータを取得してインポート
+  % ruby addocr.rb book.json > newbook.json
+
+大変めんどくさい!

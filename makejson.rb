@@ -57,16 +57,16 @@ jpegfiles = ARGV.grep /\.jpg/i
     elsif i == jpegfiles.length - 1
       line1 = "[#{sprintf('%03d',i-1)}]"
     else
-      line1 = "[#{sprintf('%03d',i-1)}]  [#{sprintf('%03d',i+1)}] 
+      line1 = "[#{sprintf('%03d',i-1)}]  [#{sprintf('%03d',i+1)}]"
     end
-    lines << line1
-    lines << ""
+
+    # lines << line1
+    # lines << ""
     lines << "[[#{s3url} #{gyazourl}]]"
 
     pages << page
 
   end
-  
 }
 
 puts jsondata.to_json
