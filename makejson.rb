@@ -1,7 +1,6 @@
 #
 # 自炊PDFから分解したjpgをS3とGyazoにアップロードしてScrapboxのJSONを作成
 #
-require 'digest/md5'
 require 'json'
 
 home = ENV['HOME']
@@ -24,23 +23,17 @@ jpegfiles = ARGV.grep /\.jpg/i
   if data
     STDERR.puts file
   
-    md5 = Digest::MD5.new.update(data).to_s
-    md5 =~ /^(.)(.)/
-    d1 = $1
-    d2 = $2
-
     # S3にアップロード
-    s3url = "http://masui.org.s3.amazonaws.com/#{d1}/#{d2}/#{md5}.jpg"
-    STDERR.puts s3url
     STDERR.puts "ruby #{home}/bin/upload #{file}"
-    system "ruby #{home}/bin/upload #{file}"
+    s3url = `ruby #{home}/bin/upload #{file}`.chomp
+    STDERR.puts s3url
 
     # Gyazoにアップロード
     STDERR.puts "ruby #{home}/bin/gyazo_upload #{file}"
     gyazourl = `ruby #{home}/bin/gyazo_upload #{file}`.chomp
     STDERR.puts gyazourl
     
-    sleep 1
+    sleep 2
 
     page = {}
     page['title'] = sprintf("%03d",i)
