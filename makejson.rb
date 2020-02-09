@@ -1,16 +1,10 @@
+#
+# 自炊PDFから分解したjpgをS3とGyazoにアップロードしてScrapboxのJSONを作成
+#
 require 'digest/md5'
 require 'json'
-require 'gyazo'
 
-S3ROOT = ENV['S3ROOT']
-unless S3ROOT
-  STDERR.puts "S3ROOT not defined"
-  exit
-end
-STDERR.puts "using #{S3ROOT}..."
-
-token = ENV['GYAZO_TOKEN'] # .bash_profileに書いてある
-gyazo = Gyazo::Client.new access_token: token
+home = ENV['HOME']
 
 jsondata = {}
 pages = []
@@ -34,17 +28,18 @@ jpegfiles = ARGV.grep /\.jpg/i
     md5 =~ /^(.)(.)/
     d1 = $1
     d2 = $2
-    s3path = "#{S3ROOT}/masui.org/#{d1}/#{d2}/#{md5}.jpg"
+
+    # S3にアップロード
     s3url = "http://masui.org.s3.amazonaws.com/#{d1}/#{d2}/#{md5}.jpg"
     STDERR.puts s3url
-    STDERR.puts s3path
+    STDERR.puts "ruby #{home}/bin/upload #{file}"
+    system "ruby #{home}/bin/upload #{file}"
 
-    unless File.exist?(s3path)
-      File.write(s3path,data)
-    end
+    # Gyazoにアップロード
+    STDERR.puts "ruby #{home}/bin/gyazo_upload #{file}"
+    gyazourl = `ruby #{home}/bin/gyazo_upload #{file}`.chomp
+    STDERR.puts gyazourl
     
-    res = gyazo.upload imagefile: s3path
-    gyazourl = res[:permalink_url]
     sleep 1
 
     page = {}
@@ -60,6 +55,7 @@ jpegfiles = ARGV.grep /\.jpg/i
       line1 = "[#{sprintf('%03d',i-1)}]  [#{sprintf('%03d',i+1)}]"
     end
 
+    lines << line1
     lines << "[[#{s3url} #{gyazourl}]]"
     lines << line1
     lines << ""
@@ -70,4 +66,3 @@ jpegfiles = ARGV.grep /\.jpg/i
 }
 
 puts jsondata.to_json
-
