@@ -60,9 +60,8 @@ origdata['pages'].each { |origpage|
         }
       end
     }
+    newdata['pages'] << newpage
   end
-
-  newdata['pages'] << newpage
 }
 
 puts newdata.to_json
