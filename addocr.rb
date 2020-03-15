@@ -31,29 +31,33 @@ origdata['pages'].each { |origpage|
   newpage = {}
   newpage['title'] = origpage['title']
   newpage['lines'] = []
-  gyazoid = nil
+  gyazoids = []
   ocr_done = false
   origpage['lines'].each { |origline|
     newpage['lines'] << origline
     if origline =~ /gyazo\.com\/([0-9a-f]{32})/i
-      gyazoid = $1
+      gyazoids << $1
     end
     if origline =~ /OCR text/
       ocr_done = true
     end
   }
-  if gyazoid && !ocr_done
+  if gyazoids.length > 0 && !ocr_done
     newpage['lines'] << ""
     newpage['lines'] << "(OCR text)"
-    res = gyazo.image image_id: gyazoid
-    if res && res[:ocr]
-      res[:ocr][:description].split(/\n/).each { |ocrline|
-        newpage['lines'] << "> #{ocrline}"
-      }
-    end
+    gyazoids.each { |gyazoid|
+      res = gyazo.image image_id: gyazoid
+      if res && res[:ocr]
+        res[:ocr][:description].split(/\n/).each { |ocrline|
+          newpage['lines'] << "> #{ocrline}"
+        }
+      end
+    }
   end
 
   newdata['pages'] << newpage
+
+  break
 }
 
 puts newdata.to_json
